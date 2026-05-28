@@ -53,8 +53,13 @@ This config piggybacks on PlatformIO's `esp32s3box` board entry — the M5PaperC
 
 ## Status
 
-- Verified: the `template/` sketch compiles cleanly with PlatformIO 6.1.19, espressif32 6.12.0, M5Unified 0.2.16, M5GFX 0.2.22, M5PM1 1.0.6, producing a 500 KB `firmware.bin`.
-- Not verified on hardware: I built the skill without a physical board in front of me. Device-side behaviour (EPD refresh quality, real mic latency, accurate battery curve) is documented from M5Stack's official examples and the [factory firmware source](https://github.com/m5stack/M5PaperColor-UserDemo), not from a live run.
+Verified end-to-end on a real M5PaperColor (chip rev v0.2). Three sketches built, flashed, and ran:
+
+1. The `template/` hello-world — confirmed the full chain (PIO config → flash → boot → M5Unified → EPD → sprite push).
+2. SHT40 sensor sketch via `m5stack/M5Unit-ENV` — produced live temp/humidity readings on the display.
+3. Buttons + M5PM1 + 2× WS2812 RGB sketch — verified the L3B power dance (`pm1.setLdoEnable(true)`), button input, NeoPixel on G21.
+
+Untested on hardware: audio (mic / speaker / ES8311), microSD slot, IR TX, RTC alarm wake, M5PM1 shutdown / wake. Those references are documented from the official examples and the [factory firmware source](https://github.com/m5stack/M5PaperColor-UserDemo) but I haven't driven them on a board yet.
 
 ## Sources
 

@@ -4,13 +4,13 @@ All three sit on the **system I2C** bus (`M5.In_I2C` / `Wire` with SDA=G3 SCL=G2
 
 ## SHT40 — temperature + humidity
 
-Needs `m5stack/M5UnitENV` (>= 1.4.0).
+Needs `m5stack/M5Unit-ENV` (>= 1.4.0) — note the **dash** in the package name. `m5stack/M5UnitENV` (no dash, the form used in the official Arduino IDE docs) is *not* in the PlatformIO registry and will fail with `UnknownPackageError`. M5Unit-ENV transitively pulls in `m5stack/M5UnitUnified`.
 
 ```ini
 lib_deps =
     m5stack/M5Unified @ ^0.2.15
     m5stack/M5GFX @ ^0.2.21
-    m5stack/M5UnitENV @ ^1.4.0
+    m5stack/M5Unit-ENV @ ^1.4.0
 ```
 
 ```cpp
