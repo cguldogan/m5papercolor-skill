@@ -63,7 +63,7 @@ Verified end-to-end on a real M5PaperColor (chip rev v0.2). Seven sketches built
 | 4 | `examples/speaker-tone/` | `M5.Speaker.tone()` end-to-end (ES8311 + AW8737A) |
 | 5 | `examples/sdcard-detect/` | M5PM1 PYG3/PYG4/PYG1 SD power dance + CARD_DEC |
 | 6 | `examples/rtc-wake-loop/` | RX8130 alarm + `pm1.shutdown()` + PYG2 wake, NVS persistence |
-| 7 | `examples/ir-tv-blaster/` | IR LED on G48 fires (camera-verified). **Real finding:** the M5Stack docs example for IRremote is broken on v4; the corrected pattern with `-DIR_SEND_PIN=48` is documented in [references/input.md](.claude/skills/m5papercolor/references/input.md). |
+| 7 | `examples/ir-tv-blaster/` | IR LED on G48 fires (raw `digitalWrite` camera-verified). IRremote v4 canonical pattern works as documented by M5Stack. |
 
 Not yet verified on hardware: microphone capture (`M5.Mic.record`), Wi-Fi + SNTP RTC sync. The reference docs for those come straight from the M5Stack official examples and look correct, but haven't been driven on a board.
 

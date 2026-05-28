@@ -19,7 +19,7 @@ This skill was tested end-to-end against an actual M5PaperColor (chip rev v0.2, 
 4. **`examples/speaker-tone/`** — `M5.Speaker.tone()` audible at 2 kHz / 4 kHz / 8 kHz / 500 Hz.
 5. **`examples/sdcard-detect/`** — M5PM1 PYG3/PYG4/PYG1 power dance + `CARD_DEC` no-card detection.
 6. **`examples/rtc-wake-loop/`** — full RX8130 alarm → PYG2 wake → `pm1.shutdown()` cycle, NVS-persisted boot counter, observed wake source `EXT_WAKE (RTC)` confirmed.
-7. **`examples/ir-tv-blaster/`** — IR LED on G48 fires via raw `digitalWrite` (camera-verified). IRremote v4 has a real bug on this board — see [input.md](references/input.md) — but the hardware is good and the workarounds documented.
+7. **`examples/ir-tv-blaster/`** — IR LED on G48 fires (raw `digitalWrite` confirmed on a phone camera). The IRremote v4 + M5Stack canonical `begin(DISABLE_LED_FEEDBACK) / setSendPin(48)` pattern is correct — when `IR_SEND_PIN` is not defined as a build flag, the library's ESP32 LEDC code reads `IrSender.sendPin` at runtime. See [input.md](references/input.md).
 
 PlatformIO build env: 6.1.19, espressif32 6.12.0, M5Unified 0.2.16, M5GFX 0.2.22, M5PM1 1.0.6, M5Unit-ENV 1.4.0 (+ M5UnitUnified 0.4.6), Adafruit NeoPixel 1.15.4, Arduino-IRremote 4.4.x.
 
@@ -102,7 +102,7 @@ These were flashed and observed to work on a real device — copy whole director
 - [`examples/speaker-tone/`](examples/speaker-tone/) — `M5.Speaker.tone()` audible beep test.
 - [`examples/sdcard-detect/`](examples/sdcard-detect/) — full M5PM1 microSD power dance + card-detect read.
 - [`examples/rtc-wake-loop/`](examples/rtc-wake-loop/) — RX8130 alarm + `pm1.shutdown()` cycle, NVS-persisted boot counter.
-- [`examples/ir-tv-blaster/`](examples/ir-tv-blaster/) — IRremote v4 TV-power-code blaster on G48. **Read [input.md](references/input.md) before relying on IRremote v4** — the M5Stack docs example is broken; you need `-DIR_SEND_PIN=48` in `build_flags`.
+- [`examples/ir-tv-blaster/`](examples/ir-tv-blaster/) — IRremote v4 TV-power-code blaster on G48, using the canonical M5Stack `begin(DISABLE_LED_FEEDBACK) / setSendPin(48)` pattern.
 
 ## Reference index — load by topic
 

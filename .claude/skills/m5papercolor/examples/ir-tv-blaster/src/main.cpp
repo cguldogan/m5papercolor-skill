@@ -82,9 +82,8 @@ void setup()
     canvas.createSprite(M5.Display.width(), M5.Display.height());
 
     gpio_reset_pin(gpio_num_t(IR_TX_PIN));
-    // With -DIR_SEND_PIN=48 in platformio.ini, IRremote attaches LEDC to G48 at compile time.
-    // No runtime arg is accepted — IrSender.setSendPin() is silently ignored by the ESP32 LEDC path.
-    IrSender.begin();
+    IrSender.begin(DISABLE_LED_FEEDBACK);
+    IrSender.setSendPin(IR_TX_PIN);
 
     Serial.println("[ir] ready");
     render();
