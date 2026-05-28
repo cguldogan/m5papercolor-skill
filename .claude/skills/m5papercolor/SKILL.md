@@ -13,7 +13,7 @@ The M5PaperColor (SKU **C151**) is an ESP32-S3R8 board (16MB flash, 8MB PSRAM, 2
 
 This skill was tested end-to-end against an actual M5PaperColor (chip rev v0.2, MAC `44:1b:f6:...`). Seven sketches built, flashed, and observed:
 
-1. **`template/` hello-world** — drew "Hello PaperColor" on the EPD. Full chain: PIO → flash → M5Unified → EPD → sprite push.
+1. **`template/` hello-world** — draws to the EPD, then deep-sleeps with all three user buttons as ext1 wake sources. Counter persists across sleep via `RTC_DATA_ATTR`. Verified: redraw + counter increments on each button press, screen stays visible at zero power between presses.
 2. **`examples/sht40-live/`** — SHT40 over system I2C, live temp + humidity on EPD via `M5Unit-ENV`.
 3. **`examples/rgb-button/`** — M5PM1 L3B power dance + 2× WS2812 on G21 + Button A cycles colors.
 4. **`examples/speaker-tone/`** — `M5.Speaker.tone()` audible at 2 kHz / 4 kHz / 8 kHz / 500 Hz.

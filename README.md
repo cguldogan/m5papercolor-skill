@@ -112,7 +112,7 @@ Verified end-to-end on a real M5PaperColor (chip rev v0.2). Seven sketches built
 
 | # | Example | What it proves |
 |---|---|---|
-| 1 | `template/` hello-world | PIO config → flash → boot → M5Unified → EPD → sprite push |
+| 1 | `template/` hello-world | PIO → flash → boot → M5Unified → EPD → sprite push, **then deep-sleeps with buttons A/B/C as ext1 wake sources** (~100 µA idle, counter persists via `RTC_DATA_ATTR`) |
 | 2 | `examples/sht40-live/` | SHT40 over system I2C via `m5stack/M5Unit-ENV` |
 | 3 | `examples/rgb-button/` | M5PM1 L3B power dance + 2× WS2812 + buttons |
 | 4 | `examples/speaker-tone/` | `M5.Speaker.tone()` end-to-end (ES8311 + AW8737A) |
