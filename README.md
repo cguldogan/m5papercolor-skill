@@ -63,7 +63,7 @@ Verified end-to-end on a real M5PaperColor (chip rev v0.2). Seven sketches built
 | 4 | `examples/speaker-tone/` | `M5.Speaker.tone()` end-to-end (ES8311 + AW8737A) |
 | 5 | `examples/sdcard-detect/` | M5PM1 PYG3/PYG4/PYG1 SD power dance + CARD_DEC |
 | 6 | `examples/rtc-wake-loop/` | RX8130 alarm + `pm1.shutdown()` + PYG2 wake, NVS persistence |
-| 7 | `examples/ir-tv-blaster/` | IR LED on G48 fires (raw `digitalWrite` camera-verified). IRremote v4 canonical pattern works as documented by M5Stack. |
+| 7 | `examples/ir-tv-blaster/` | IR LED on G48 fires in **both** modes: raw `digitalWrite` 38 kHz and IRremote v4 via the canonical M5Stack `begin(DISABLE_LED_FEEDBACK) / setSendPin(48)` pattern (both camera-confirmed). |
 
 Not yet verified on hardware: microphone capture (`M5.Mic.record`), Wi-Fi + SNTP RTC sync. The reference docs for those come straight from the M5Stack official examples and look correct, but haven't been driven on a board.
 
