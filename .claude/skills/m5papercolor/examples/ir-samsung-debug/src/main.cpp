@@ -123,9 +123,13 @@ void loop()
     last = millis();
 
     if (mode == LIB) {
-        IrSender.sendSamsung(CODES[idx].addr, CODES[idx].cmd, /*repeats*/0);
+        // 8 repeat frames simulate a held key — commercial signage often gates
+        // power/source commands behind a sustained press, and consumer Samsungs
+        // sometimes need it for source-switching too.
+        IrSender.sendSamsung(CODES[idx].addr, CODES[idx].cmd, /*repeats*/8);
         ++pulses;
-        if ((pulses % 20) == 0) Serial.printf("[ir] %lu Samsung bursts sent\n", (unsigned long)pulses);
+        if ((pulses % 5) == 0) Serial.printf("[ir] %lu held-key bursts sent (%s)\n",
+                                             (unsigned long)pulses, CODES[idx].name);
     } else {
         rawCarrierPulse(60000);   // 60 ms of 38 kHz on G48
         ++pulses;

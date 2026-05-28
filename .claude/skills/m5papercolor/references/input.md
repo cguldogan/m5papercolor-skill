@@ -124,6 +124,16 @@ IrSender.sendPanasonic(addr, cmd);
 
 For raw timings: `IrSender.sendRaw(buf, len, kHz)`.
 
+### Practical notes on IR range / TV control
+
+The M5PaperColor's IR LED is a small surface-mount diode driven directly from G48 — useful range is **~1–2 m**, much less than a consumer remote's ~8 m. For reliable TV control:
+
+- Aim straight at the TV's IR window (bottom-center bezel on most Samsungs). Off-axis cuts range further.
+- Anything in front of the IR window (soundbar, debris, recessed mount) will block.
+- Modern Samsungs (post-2018 Q-series, etc.) pair with their Smart Remote over Bluetooth. They **also** accept IR for backwards compatibility, but: power-on may be ignored when the set is already on (anti-spoofing), and code tables shift between year/region variants. `E0E040BF` is the canonical Samsung power code but isn't universally honored.
+- Commercial signage (QMR/QHR series) may require **held-key bursts** — pass a non-zero `repeats` arg to `sendSamsung()` (e.g. `sendSamsung(0xE0E0, 0x40BF, 8)`).
+- If a TV doesn't react, use the [`examples/ir-samsung-debug/`](../examples/ir-samsung-debug/) sketch's **Button B → raw 38 kHz carrier** mode to confirm the LED is firing at all. If the LED pulses bright on a phone camera but the TV doesn't react, the problem is code-database/aim, not transmission.
+
 ### Gotchas
 
 - The board has **no IR receiver**. Don't try to use `IrReceiver`.
