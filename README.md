@@ -4,6 +4,61 @@ A [Claude Code](https://claude.com/claude-code) skill for writing Arduino / Plat
 
 When this skill is loaded, asking Claude things like "write a sketch that shows temperature on the PaperColor", "drive the IR TX on the C151", or "wake the M5PaperColor every minute via RTC alarm" causes it to auto-load the appropriate reference file and reach for the verified code patterns instead of guessing.
 
+## What the M5PaperColor can do
+
+A pocket-sized (70.8 × 103.9 × 8.5 mm, 73 g) battery-powered IoT board with a colour e-paper display, voice I/O, environmental sensing, and timed wake-up. Useful for: low-power dashboards, smart room signs, voice memo recorders, e-paper photo frames, environmental loggers, IR remotes, or any project that needs to *show information for hours/days on a single charge*.
+
+**Compute / wireless**
+
+- ESP32-S3R8 — dual-core Xtensa LX7 @ 240 MHz, 16 MB flash, 8 MB Octal PSRAM
+- 2.4 GHz Wi-Fi (Wi-Fi 4 / 802.11 b/g/n)
+- USB-C with native USB-Serial/JTAG bridge (no extra cable for flashing or debug)
+
+**Display**
+
+- 4" **E Ink Spectra 6** colour panel, 400 × 600, 6 physical colours (black, white, red, yellow, green, blue)
+- Bistable: image survives power loss until next refresh
+- Selectable refresh modes from `epd_quality` (best colour, ~10 s full refresh) to `epd_fastest` (partial-region, ~1 s washed-out)
+
+**Audio**
+
+- ES8311 audio codec + AW8737A amplifier driving a 1 W / 8 Ω built-in speaker
+- MEMS microphone + ES7210 audio ADC with **hardware AEC** (acoustic echo cancellation)
+- Drop-in `M5.Speaker.tone(freq, ms)` / `M5.Speaker.playWav(...)` and `M5.Mic.record(...)`
+- Mic and speaker share the I2S bus — can't both be active at once
+
+**Sensors**
+
+- **SHT40** temperature + humidity (±0.2 °C, ±1.8 %RH typical) on the system I2C bus
+- **RX8130CE** real-time clock with alarm IRQ, ~300 nA backup current — keeps time across full power-down
+- Onboard ADC channels on the M5PM1 for battery voltage, VBUS, and internal die temperature
+
+**Input**
+
+- 3 user buttons (BtnA / BtnB / BtnC) on the front face
+- Side **power button** with single-click reset, double-click power-off, long-press download mode (configurable through M5PM1)
+
+**Output / signaling**
+
+- **2× WS2812 RGB LEDs** on the side
+- **IR transmitter** (G48, ~1–2 m effective range) — drives most NEC / Samsung / Sony / RC5 / RC6 / Panasonic devices via `Arduino-IRremote`
+
+**Storage / expansion**
+
+- **microSD slot** (SPI, up to 25 MHz, FAT32) — photo frames, data logs, OTA payloads
+- **HY2.0-4P Grove Port A** (5 V / GND / 2 GPIO) for connecting M5Stack Units — sensors, actuators, displays
+- 32-byte sleep-retained RTC scratch RAM in the M5PM1 + 16 MB internal flash for NVS / SPIFFS / FATFS
+
+**Power**
+
+- 1250 mAh LiPo battery, USB-C charging
+- **M5PM1** custom power-management IC controls 5 power rails (L0–L3B) and a 32-bit wake timer
+- Standby current: ~92 µA in M5PM1 shutdown, microamps in ESP32 deep sleep
+- Full-load: ~212 mA
+- Three sleep tiers: ESP32 light sleep, ESP32 deep sleep (RTC alarm wake), and full M5PM1 shutdown (button/timer/USB wake)
+
+**Approximate runtime** (back-of-the-envelope): a once-per-minute screen refresh + sensor read pattern can run for **weeks** on a single charge via `pm1.shutdown()` + RTC alarm.
+
 ## Install
 
 Drop the skill directory into either your project or your global `~/.claude/skills/`:
