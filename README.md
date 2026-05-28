@@ -53,13 +53,19 @@ This config piggybacks on PlatformIO's `esp32s3box` board entry — the M5PaperC
 
 ## Status
 
-Verified end-to-end on a real M5PaperColor (chip rev v0.2). Three sketches built, flashed, and ran:
+Verified end-to-end on a real M5PaperColor (chip rev v0.2). Seven sketches built, flashed, and observed:
 
-1. The `template/` hello-world — confirmed the full chain (PIO config → flash → boot → M5Unified → EPD → sprite push).
-2. SHT40 sensor sketch via `m5stack/M5Unit-ENV` — produced live temp/humidity readings on the display.
-3. Buttons + M5PM1 + 2× WS2812 RGB sketch — verified the L3B power dance (`pm1.setLdoEnable(true)`), button input, NeoPixel on G21.
+| # | Example | What it proves |
+|---|---|---|
+| 1 | `template/` hello-world | PIO config → flash → boot → M5Unified → EPD → sprite push |
+| 2 | `examples/sht40-live/` | SHT40 over system I2C via `m5stack/M5Unit-ENV` |
+| 3 | `examples/rgb-button/` | M5PM1 L3B power dance + 2× WS2812 + buttons |
+| 4 | `examples/speaker-tone/` | `M5.Speaker.tone()` end-to-end (ES8311 + AW8737A) |
+| 5 | `examples/sdcard-detect/` | M5PM1 PYG3/PYG4/PYG1 SD power dance + CARD_DEC |
+| 6 | `examples/rtc-wake-loop/` | RX8130 alarm + `pm1.shutdown()` + PYG2 wake, NVS persistence |
+| 7 | `examples/ir-tv-blaster/` | IR LED on G48 fires (camera-verified). **Real finding:** the M5Stack docs example for IRremote is broken on v4; the corrected pattern with `-DIR_SEND_PIN=48` is documented in [references/input.md](.claude/skills/m5papercolor/references/input.md). |
 
-Untested on hardware: audio (mic / speaker / ES8311), microSD slot, IR TX, RTC alarm wake, M5PM1 shutdown / wake. Those references are documented from the official examples and the [factory firmware source](https://github.com/m5stack/M5PaperColor-UserDemo) but I haven't driven them on a board yet.
+Not yet verified on hardware: microphone capture (`M5.Mic.record`), Wi-Fi + SNTP RTC sync. The reference docs for those come straight from the M5Stack official examples and look correct, but haven't been driven on a board.
 
 ## Sources
 

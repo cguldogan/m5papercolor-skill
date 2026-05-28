@@ -44,41 +44,72 @@ To override: `pm1.btnSetConfig(...)` — see the M5PM1 datasheet for `BTN_CFG_1`
 
 The board has a transmit-only IR LED on **G48**. Drive it with `Arduino-IRremote` (`IRremote.hpp`).
 
-### Library dep
+### Library dep (with critical build flag)
 
-Add to `platformio.ini`:
+The M5Stack docs example for IR is broken on IRremote v4 (the library was rewritten between v3 and v4 and the runtime `setSendPin()` no longer works on ESP32). You **must** pass the send pin at compile time:
+
 ```ini
 lib_deps =
     m5stack/M5Unified @ ^0.2.15
     m5stack/M5GFX @ ^0.2.21
     Arduino-IRremote/IRremote @ ^4.4.0
+
+build_flags =
+    ; ...your other flags...
+    -DIR_SEND_PIN=48        ; HARD-required for IRremote v4 on ESP32-S3
 ```
 
-### Setup + send pattern
+Why: IRremote v4 on ESP32 drives the 38 kHz carrier with the **LEDC** peripheral, calling `ledcAttach(IR_SEND_PIN, ...)`. That `IR_SEND_PIN` is a **compile-time macro**, not a runtime variable — `IrSender.setSendPin(48)` updates an internal field that `ledcAttach()` never reads. Without `-DIR_SEND_PIN=48`, the carrier ends up on whatever pin the library defaults to (often nothing), and the IR LED stays dark.
+
+Bonus footgun in the same docs example: `IrSender.begin(DISABLE_LED_FEEDBACK)`. `DISABLE_LED_FEEDBACK` is `#define`d to `false` (`0`) in IRremote v4. That call resolves to `IrSender.begin((uint_fast8_t)0)`, which silently sets the send pin to **GPIO 0**. Don't pass `DISABLE_LED_FEEDBACK` as the first arg.
+
+### Setup + send pattern (corrected)
 
 ```cpp
 #include <Arduino.h>
 #include <M5Unified.h>
-#include <IRremote.hpp>
-
-#define IR_TX_PIN 48
+#include <IRremote.hpp>     // IR_SEND_PIN=48 is baked in via build_flags
 
 void setup() {
     auto cfg = M5.config();
     cfg.clear_display = false;
     M5.begin(cfg);
 
-    gpio_reset_pin(gpio_num_t(IR_TX_PIN));         // mandatory — pin is muxed
-    IrSender.begin(DISABLE_LED_FEEDBACK);
-    IrSender.setSendPin(IR_TX_PIN);
+    gpio_reset_pin(GPIO_NUM_48);    // detach G48 from any other peripheral
+    IrSender.begin();                // no args — pin came from build_flags
 }
 
 void loop() {
     M5.update();
-    IrSender.sendNEC(/*address*/ 0x1111, /*command*/ 0x34, /*repeats*/ 0);
+    IrSender.sendNEC(0x1111, 0x34, /*repeats*/ 0);
     delay(1000);
 }
 ```
+
+### Known-shaky behaviour on ESP32-S3
+
+Even with the compile-time pin fix, IRremote v4 + M5GFX + ESP32-S3 has a **LEDC channel allocation conflict** in some configurations — the first IR burst fires but subsequent ones don't reach the LED. This was observed during skill verification (LED pulse seen on a phone camera once, then went dark). If you need reliable sustained IR TX, options:
+
+1. **Drive the IR LED yourself**: `digitalWrite(48, HIGH/LOW)` works at the GPIO level (confirmed by raw toggle test). Write a hand-rolled NEC encoder that toggles the pin at 38 kHz during marks and holds LOW during spaces. ~100 lines.
+2. **Use the ESP32 RMT peripheral directly** via `driver/rmt.h` — that's what production-grade IR codebases do and what IRremote v4 *should* be using on ESP-IDF.
+3. **Pin LEDC ownership** by passing `-DSEND_LEDC_CHANNEL=4` to keep IRremote off the channels M5GFX uses (channels 0-3 are commonly taken by audio/EPD).
+
+### Verified on hardware
+
+- The IR LED on G48 fires correctly under raw `digitalWrite` — see [examples/ir-tv-blaster/](../examples/ir-tv-blaster/) (build-verified) and the raw-toggle test referenced in commit history.
+- IRremote v4 with the `-DIR_SEND_PIN=48` fix transmits once but not reliably across a `pushSprite` cycle.
+
+### Other supported protocols (from Arduino-IRremote)
+
+```cpp
+IrSender.sendNEC(addr, cmd, repeats);
+IrSender.sendSamsung(addr, cmd, repeats);
+IrSender.sendSony(cmd, bits);
+IrSender.sendRC5(addr, cmd);
+// ... full list in IRremote.hpp
+```
+
+For raw timings: `IrSender.sendRaw(buf, len, kHz)`.
 
 ### Other supported protocols (from Arduino-IRremote)
 
@@ -98,4 +129,6 @@ For raw timings: `IrSender.sendRaw(buf, len, kHz)`.
 
 - The board has **no IR receiver**. Don't try to use `IrReceiver`.
 - Call `gpio_reset_pin(GPIO_NUM_48)` before `IrSender.begin()` — the pin defaults to a state that breaks NEC encoding.
-- The IR LED draws from the main 3V3 rail; no M5PM1 enable is needed (it's not L3B).
+- The IR LED draws from the main 3V3 rail; no M5PM1 enable is needed (it's not L3B). Confirmed: raw `digitalWrite(48, HIGH)` lights the LED without any M5PM1 calls.
+- `DISABLE_LED_FEEDBACK` is `0` in IRremote v4 — **don't** pass it as the first argument to `begin()`.
+- IRremote v4 on ESP32 ignores the runtime `setSendPin()` for LEDC carrier generation. Always use `-DIR_SEND_PIN=...` as a build flag.

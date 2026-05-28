@@ -11,13 +11,19 @@ The M5PaperColor (SKU **C151**) is an ESP32-S3R8 board (16MB flash, 8MB PSRAM, 2
 
 ## Verified — on real hardware
 
-Beyond compiling: this skill was tested end-to-end against an actual M5PaperColor (chip rev v0.2, MAC `44:1b:f6:...`). Three sketches built, flashed, and ran:
+This skill was tested end-to-end against an actual M5PaperColor (chip rev v0.2, MAC `44:1b:f6:...`). Seven sketches built, flashed, and observed:
 
-1. **`template/` hello-world** — drew "Hello PaperColor" on the EPD on first refresh. Confirms PlatformIO config + toolchain + flash + M5Unified init + EPD bring-up + sprite push.
-2. **SHT40 sensor** — initialized via `M5Unit-ENV`'s `SHT4X` over system I2C (G3 SDA / G2 SCL), produced live temp + humidity numbers on screen.
-3. **Buttons + M5PM1 + RGB LEDs** — full L3B power dance (`pm1.begin(&M5.In_I2C, ...)` → `pm1.setLdoEnable(true)`), Adafruit_NeoPixel chain on G21, Button A cycles colors and updates the display. All paths from `power.md`, `rgb_led.md`, and `input.md` confirmed working.
+1. **`template/` hello-world** — drew "Hello PaperColor" on the EPD. Full chain: PIO → flash → M5Unified → EPD → sprite push.
+2. **`examples/sht40-live/`** — SHT40 over system I2C, live temp + humidity on EPD via `M5Unit-ENV`.
+3. **`examples/rgb-button/`** — M5PM1 L3B power dance + 2× WS2812 on G21 + Button A cycles colors.
+4. **`examples/speaker-tone/`** — `M5.Speaker.tone()` audible at 2 kHz / 4 kHz / 8 kHz / 500 Hz.
+5. **`examples/sdcard-detect/`** — M5PM1 PYG3/PYG4/PYG1 power dance + `CARD_DEC` no-card detection.
+6. **`examples/rtc-wake-loop/`** — full RX8130 alarm → PYG2 wake → `pm1.shutdown()` cycle, NVS-persisted boot counter, observed wake source `EXT_WAKE (RTC)` confirmed.
+7. **`examples/ir-tv-blaster/`** — IR LED on G48 fires via raw `digitalWrite` (camera-verified). IRremote v4 has a real bug on this board — see [input.md](references/input.md) — but the hardware is good and the workarounds documented.
 
-PlatformIO build env: 6.1.19, espressif32 6.12.0, M5Unified 0.2.16, M5GFX 0.2.22, M5PM1 1.0.6, M5Unit-ENV 1.4.0 (+ M5UnitUnified 0.4.6), Adafruit NeoPixel 1.15.4.
+PlatformIO build env: 6.1.19, espressif32 6.12.0, M5Unified 0.2.16, M5GFX 0.2.22, M5PM1 1.0.6, M5Unit-ENV 1.4.0 (+ M5UnitUnified 0.4.6), Adafruit NeoPixel 1.15.4, Arduino-IRremote 4.4.x.
+
+**Not yet verified on hardware:** microphone (M5.Mic.record), Wi-Fi/SNTP-driven RTC sync. Reference docs for those come from M5Stack's official examples and look right but haven't been driven on a board.
 
 Start from [template/](template/) — copy that directory and run `pio run`.
 
@@ -91,8 +97,12 @@ void loop() {
 
 These were flashed and observed to work on a real device — copy whole directories and run `pio run`:
 
-- [`examples/sht40-live/`](examples/sht40-live/) — reads SHT40 over system I2C and renders live temp/humidity to the EPD every 30 s. Uses `m5stack/M5Unit-ENV`.
-- [`examples/rgb-button/`](examples/rgb-button/) — initializes M5PM1, brings up L3B, cycles 2× WS2812 LEDs through R/G/B/Y/W/off on Button A press, mirrors state on the display.
+- [`examples/sht40-live/`](examples/sht40-live/) — SHT40 temp/humidity on EPD via `M5Unit-ENV`.
+- [`examples/rgb-button/`](examples/rgb-button/) — M5PM1 L3B bring-up + 2× WS2812 + Button A cycle.
+- [`examples/speaker-tone/`](examples/speaker-tone/) — `M5.Speaker.tone()` audible beep test.
+- [`examples/sdcard-detect/`](examples/sdcard-detect/) — full M5PM1 microSD power dance + card-detect read.
+- [`examples/rtc-wake-loop/`](examples/rtc-wake-loop/) — RX8130 alarm + `pm1.shutdown()` cycle, NVS-persisted boot counter.
+- [`examples/ir-tv-blaster/`](examples/ir-tv-blaster/) — IRremote v4 TV-power-code blaster on G48. **Read [input.md](references/input.md) before relying on IRremote v4** — the M5Stack docs example is broken; you need `-DIR_SEND_PIN=48` in `build_flags`.
 
 ## Reference index — load by topic
 
