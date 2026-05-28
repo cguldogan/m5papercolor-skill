@@ -134,6 +134,18 @@ The M5PaperColor's IR LED is a small surface-mount diode driven directly from G4
 - Commercial signage (QMR/QHR series) may require **held-key bursts** — pass a non-zero `repeats` arg to `sendSamsung()` (e.g. `sendSamsung(0xE0E0, 0x40BF, 8)`).
 - If a TV doesn't react, use the [`examples/ir-samsung-debug/`](../examples/ir-samsung-debug/) sketch's **Button B → raw 38 kHz carrier** mode to confirm the LED is firing at all. If the LED pulses bright on a phone camera but the TV doesn't react, the problem is code-database/aim, not transmission.
 
+### Custom-protocol devices (Dyson, some Mitsubishi, some Xiaomi)
+
+Some consumer devices — notably **Dyson Pure Hot+Cool** (HP00/HP02/HP03/HP04) — use proprietary IR protocols that **aren't in IRremote v4**'s built-in protocol set. NEC-style guesses from forum databases rarely work (we tried 8 candidates against an HP02 with no reaction).
+
+The realistic path for these:
+
+1. Add an IR receiver (e.g. a TSOP38238 module wired to a spare GPIO) — the M5PaperColor has **no built-in IR receiver**, so this requires external hardware.
+2. Run IRremote's `ReceiveDemo` sketch and press each button on the original remote. Record the raw mark/space timings.
+3. Replay the captured timings with `IrSender.sendRaw(buf, len, /*kHz*/38)`.
+
+Without the original remote, there's no shortcut — Dyson doesn't publish IR specs and the codes don't transfer between models.
+
 ### Gotchas
 
 - The board has **no IR receiver**. Don't try to use `IrReceiver`.
